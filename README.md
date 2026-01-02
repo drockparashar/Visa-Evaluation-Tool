@@ -1,16 +1,33 @@
 # Multi-Country Visa Evaluation Tool
 
-A full-stack web application that helps users assess their likelihood of obtaining different types of visas across multiple countries using AI-powered evaluation.
+A comprehensive full-stack web application that helps users assess their visa eligibility across multiple countries using AI-powered evaluation, with features for partner API integration, admin dashboard, and self-service API key generation.
 
 ## 🎯 Features
 
+### Core Features
+
 - **Multi-Country Support**: Ireland, Poland, Germany, USA, Canada, Australia
 - **Multiple Visa Types**: Work Permits, Student Visas, Tourist Visas, Business Visas, Family Reunion, and more
-- **AI-Powered Evaluation**: Uses Google Gemini 1.5 Flash for intelligent visa assessment
-- **Document Upload**: Support for multiple PDF document uploads
-- **Detailed Results**: Comprehensive scoring with strengths, weaknesses, and recommendations
+- **AI-Powered Evaluation**: Uses Google Gemini 2.5 Flash for intelligent visa assessment with 8192 token output
+- **Document Upload**: PDF document upload support (currently resume-only, extensible for multiple documents)
+- **Detailed Results**: Comprehensive scoring with strengths, weaknesses, and actionable recommendations
+- **PDF Report Generation**: Download evaluation results as professional PDF reports
 - **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
-- **Modern UI**: Built with Next.js and Tailwind CSS
+
+### API & Integration Features
+
+- **X-API-Key Authentication**: Secure partner API access with rate limiting
+- **Self-Service API Keys**: Public portal for instant API key generation
+- **Rate Limiting**: Configurable request limits per API key (default: 100 requests/day)
+- **Usage Tracking**: Monitor API key usage and statistics
+
+### Admin Dashboard
+
+- **Admin Authentication**: JWT-based secure login system
+- **API Keys Management**: Create, list, update, and revoke API keys
+- **Analytics Dashboard**: Real-time statistics and usage insights
+- **Interactive Charts**: Usage trends, country distribution, visa type analytics (Recharts)
+- **Partner Management**: Track partner information and API usage
 
 ## 🏗️ Architecture
 
@@ -18,50 +35,135 @@ A full-stack web application that helps users assess their likelihood of obtaini
 
 - **Framework**: Express.js with ES modules
 - **Database**: MongoDB with Mongoose ODM
-- **AI Integration**: Google Gemini API
-- **File Handling**: Multer + pdf-parse
+- **AI Integration**: Google Gemini 2.5 Flash API
+- **Authentication**: JWT (JSON Web Tokens) with bcrypt password hashing
+- **File Handling**: Multer + pdf-parse for document processing
+- **PDF Generation**: PDFKit for evaluation reports
+- **Security**: Helmet.js, CORS, rate limiting, API key hashing
 - **Architecture**: Service layer pattern with controllers, services, and models
 
 ### Frontend (Next.js + TypeScript)
 
-- **Framework**: Next.js 16 with App Router
+- **Framework**: Next.js 16.1.1 with App Router
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS v4
-- **State Management**: Context API
-- **Form Handling**: react-hook-form + zod
-- **HTTP Client**: axios
+- **State Management**: Context API (EvaluationContext, AdminAuthContext)
+- **Form Handling**: react-hook-form + zod validation
+- **HTTP Client**: axios with interceptors
+- **UI Components**: Radix UI primitives
+- **Charts**: Recharts for data visualization
+- **Notifications**: Sonner for toast messages
+- **Icons**: Lucide React
 
 ## 📁 Project Structure
 
 ```
 Opensphere-Assignment/
-├── server/                 # Backend Express application
+├── server/                          # Backend Express application
 │   ├── src/
-│   │   ├── config/        # Configuration files (countries, database)
-│   │   ├── controllers/   # Route controllers
-│   │   ├── models/        # Mongoose models
-│   │   ├── routes/        # Express routes
-│   │   ├── services/      # Business logic (Gemini, evaluation)
-│   │   ├── middleware/    # Express middleware
-│   │   └── app.js         # Express app configuration
-│   ├── uploads/           # Uploaded files storage
-│   ├── server.js          # Entry point
+│   │   ├── config/                  # Configuration files
+│   │   │   ├── database.js          # MongoDB connection
+│   │   │   ├── constants.js         # App constants
+│   │   │   └── countries.js         # Countries & visa types data
+│   │   │
+│   │   ├── models/                  # Mongoose schemas
+│   │   │   ├── Evaluation.js        # Evaluation model
+│   │   │   ├── Admin.js             # Admin user model
+│   │   │   ├── ApiKey.js            # API key model
+│   │   │   └── ApiKeyRequest.js     # API key request tracking
+│   │   │
+│   │   ├── services/                # Business logic layer
+│   │   │   ├── document.service.js  # PDF extraction
+│   │   │   ├── gemini.service.js    # AI evaluation
+│   │   │   ├── evaluation.service.js # Main orchestrator
+│   │   │   ├── apiKey.service.js    # API key operations
+│   │   │   ├── analytics.service.js # Dashboard analytics
+│   │   │   └── pdf.service.js       # PDF report generation
+│   │   │
+│   │   ├── controllers/             # Route handlers
+│   │   │   ├── countries.controller.js
+│   │   │   ├── evaluations.controller.js
+│   │   │   ├── auth.controller.js   # Admin authentication
+│   │   │   ├── apiKeys.controller.js # API key management
+│   │   │   ├── analytics.controller.js # Dashboard analytics
+│   │   │   └── publicApiKeys.controller.js # Self-service
+│   │   │
+│   │   ├── routes/                  # Express routes
+│   │   │   ├── countries.routes.js
+│   │   │   ├── evaluations.routes.js
+│   │   │   ├── auth.routes.js       # Admin auth routes
+│   │   │   ├── admin.routes.js      # Protected admin routes
+│   │   │   └── publicApiKeys.routes.js # Public API key routes
+│   │   │
+│   │   ├── middleware/              # Express middleware
+│   │   │   ├── error.middleware.js  # Error handling
+│   │   │   ├── upload.middleware.js # File upload
+│   │   │   ├── apiKey.middleware.js # API key validation
+│   │   │   └── auth.middleware.js   # JWT authentication
+│   │   │
+│   │   ├── utils/                   # Utility functions
+│   │   │   └── jwt.js               # JWT token utilities
+│   │   │
+│   │   ├── scripts/                 # CLI scripts
+│   │   │   ├── create-admin.js      # Create admin user
+│   │   │   └── generate-api-key.js  # Generate API key
+│   │   │
+│   │   └── app.js                   # Express app configuration
+│   │
+│   ├── uploads/                     # Uploaded files storage
+│   ├── server.js                    # Entry point
+│   ├── .env                         # Environment variables
 │   └── package.json
 │
-└── client/                # Frontend Next.js application
-    ├── app/               # Next.js app router pages
-    │   ├── page.tsx       # Home page
-    │   ├── evaluate/      # Evaluation form page
-    │   └── results/       # Results page
-    ├── components/        # React components
-    │   ├── ui/           # Reusable UI components
-    │   ├── home/         # Home page components
-    │   ├── evaluation/   # Form components
-    │   └── results/      # Results components
-    ├── lib/              # Utilities and services
-    │   ├── api/          # API client functions
-    │   └── types/        # TypeScript types
-    ├── context/          # React context providers
+└── client/                          # Frontend Next.js application
+    ├── app/                         # Next.js app router
+    │   ├── page.tsx                 # Home page
+    │   ├── evaluate/                # Evaluation form
+    │   │   └── page.tsx
+    │   ├── results/                 # Results page
+    │   │   └── [evaluationId]/
+    │   │       └── page.tsx
+    │   ├── admin/                   # Admin dashboard
+    │   │   ├── login/               # Admin login
+    │   │   │   └── page.tsx
+    │   │   ├── dashboard/           # Dashboard home
+    │   │   │   ├── layout.tsx       # Sidebar layout
+    │   │   │   └── page.tsx
+    │   │   ├── api-keys/            # API keys management
+    │   │   │   └── page.tsx
+    │   │   └── analytics/           # Analytics page
+    │   │       └── page.tsx
+    │   └── api-keys/                # Public API key portal
+    │       ├── request/             # Request form
+    │       │   └── page.tsx
+    │       └── verify/              # Verification (deprecated)
+    │           └── [token]/
+    │               └── page.tsx
+    │
+    ├── components/                  # React components
+    │   ├── ui/                      # Reusable UI components
+    │   ├── home/                    # Home page components
+    │   ├── evaluation/              # Form components
+    │   ├── results/                 # Results components
+    │   └── admin/                   # Admin components
+    │       ├── AdminProtectedRoute.tsx
+    │       └── ...
+    │
+    ├── context/                     # React context providers
+    │   ├── EvaluationContext.tsx    # Evaluation state
+    │   └── AdminAuthContext.tsx     # Admin authentication
+    │
+    ├── lib/                         # Utilities and services
+    │   ├── api/                     # API client functions
+    │   │   ├── axios.ts
+    │   │   ├── countries.ts
+    │   │   └── evaluations.ts
+    │   └── types/                   # TypeScript types
+    │       ├── country.ts
+    │       ├── evaluation.ts
+    │       └── api.ts
+    │
+    ├── .env.local                   # Environment variables
     └── package.json
 ```
 
@@ -94,11 +196,31 @@ npm install
 **Backend** - Create `server/.env`:
 
 ```env
+# Server Configuration
 PORT=5000
 NODE_ENV=development
+
+# Database
 MONGODB_URI=mongodb://localhost:27017/visa-evaluation
+# OR use MongoDB Atlas:
+# MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/visa-evaluation
+
+# Gemini API
 GEMINI_API_KEY=your_gemini_api_key_here
+
+# JWT Authentication
+JWT_SECRET=your-very-secret-jwt-key-change-this-in-production-min-32-chars
+JWT_EXPIRES_IN=7d
+
+# Client Configuration
 CLIENT_URL=http://localhost:3000
+
+# File Upload
+MAX_FILE_SIZE_MB=10
+UPLOAD_DIR=./uploads
+
+# CORS (optional)
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
 **Frontend** - Create `client/.env.local`:
@@ -109,87 +231,127 @@ NEXT_PUBLIC_API_URL=http://localhost:5000/api
 
 ### 3. Run the Application
 
-**Terminal 1 - Backend:**
+**Option A: Quick Start (Recommended)**
 
 ```bash
+# Terminal 1 - Backend
 cd server
 npm run dev
-```
 
-**Terminal 2 - Frontend:**
-
-```bash
+# Terminal 2 - Frontend
 cd client
 npm run dev
 ```
 
-Visit http://localhost:3000 to see the application!
+**Option B: Create Admin User (For Dashboard Access)**
+
+```bash
+# Create first admin user
+cd server
+node src/scripts/create-admin.js
+
+# Credentials will be displayed:
+# Email: admin@visaeval.com
+# Password: admin123
+```
+
+Visit:
+
+- **Main App**: http://localhost:3000
+- **Admin Dashboard**: http://localhost:3000/admin/login
+- **API Key Request**: http://localhost:3000/api-keys/request
 
 ## 📖 User Flow
 
+### Public User Flow
+
 1. **Home Page** - Browse available countries and select one
 2. **Visa Type Selection** - Choose the type of visa you need
-3. **Evaluation Form** - Fill in personal details and upload required documents
+3. **Evaluation Form** - Fill in personal details and upload resume (PDF)
 4. **AI Processing** - Gemini AI evaluates your application (10-30 seconds)
 5. **Results Page** - View your score, strengths, weaknesses, and recommendations
+6. **Download PDF** - Get a professional PDF report of your evaluation
+
+### API Partner Flow
+
+1. **Request API Key** - Visit `/api-keys/request` and fill the form
+2. **Get Instant Key** - Receive API key immediately (no email verification)
+3. **Copy Key** - One-time display, save it securely
+4. **Integrate API** - Use X-API-Key header in requests
+5. **Monitor Usage** - Track requests via admin dashboard
+
+### Admin Flow
+
+1. **Login** - Access admin dashboard at `/admin/login`
+2. **View Dashboard** - See real-time statistics and metrics
+3. **Manage API Keys** - Create, update, revoke partner keys
+4. **View Analytics** - Interactive charts for usage trends
+5. **Monitor System** - Track evaluations and performance
 
 ## 🔧 API Endpoints
 
-### Countries
+### Public Endpoints
 
-- `GET /api/countries` - Get all countries
-- `GET /api/countries/:countryCode/visa-types` - Get visa types for a country
+#### Countries
 
-### Evaluations
+- `GET /api/countries` - Get all available countries
+- `GET /api/countries/:countryCode/visa-types` - Get visa types for a specific country
+
+#### Evaluations (Requires X-API-Key)
 
 - `POST /api/evaluations` - Submit evaluation (multipart/form-data)
+  - Headers: `X-API-Key: your_api_key`
+  - Body: FormData with user details and resume file
 - `GET /api/evaluations/:id` - Get evaluation by ID
 - `GET /api/evaluations` - Get all evaluations (with pagination)
+- `GET /api/evaluations/:id/download` - Download evaluation as PDF
 
-## 🎨 Components Overview
+#### API Key Self-Service
 
-### UI Components
+- `POST /api/api-keys/request` - Request new API key (instant, no verification)
+  - Body: `{ name, email, organization, useCase, website }`
+  - Returns: API key (shown only once)
 
-- **Button** - Styled button with variants (primary, secondary, outline)
-- **Card** - Container with header and content sections
-- **Input** - Form input with error handling
-- **Modal** - Reusable modal dialog
-- **LoadingSpinner** - Loading indicator
+### Admin Endpoints (Requires JWT)
 
-### Feature Components
+#### Authentication
 
-- **CountryCard** - Displays country with flag and visa types count
-- **VisaTypeModal** - Modal for selecting visa type
-- **EvaluationForm** - Main form with validation and file uploads
-- **ScoreCircle** - Animated circular progress for score
-- **SummaryCard** - Displays AI evaluation summary
-- **StrengthsList** - Shows application strengths
-- **WeaknessesList** - Shows areas for improvement
-- **SuggestionsList** - Shows AI recommendations
+- `POST /api/auth/login` - Admin login
+  - Body: `{ email, password }`
+  - Returns: JWT token
+- `GET /api/auth/me` - Get current admin profile
+- `POST /api/auth/logout` - Logout (client-side token removal)
 
-## 🧪 Testing
+#### API Keys Management
 
-See [TESTING.md](./TESTING.md) for comprehensive testing guide.
+- `POST /api/admin/api-keys` - Create new API key
+- `GET /api/admin/api-keys` - List all keys (with pagination, search, filters)
+- `GET /api/admin/api-keys/:keyId` - Get key details
+- `PUT /api/admin/api-keys/:keyId` - Update key settings
+- `DELETE /api/admin/api-keys/:keyId` - Revoke key
+- `GET /api/admin/api-keys/:keyId/stats` - Get key usage statistics
 
-Quick test:
+#### Analytics
 
-```bash
-# Test backend
-cd server
-curl http://localhost:5000/api/countries
-
-# Test frontend
-Open http://localhost:3000 in browser
-```
+- `GET /api/admin/analytics/dashboard` - Dashboard statistics
+- `GET /api/admin/analytics/usage` - Usage over time (default: 30 days)
+- `GET /api/admin/analytics/top-keys` - Top API keys by usage
+- `GET /api/admin/analytics/countries` - Country distribution
+- `GET /api/admin/analytics/visa-types` - Visa type distribution
+- `GET /api/admin/analytics/recent` - Recent activity
 
 ## 🔒 Security Features
 
-- **Helmet.js** - Security headers
-- **CORS** - Configured for frontend origin
-- **File Validation** - Size and type restrictions
-- **Input Validation** - Zod schema validation
+- **Helmet.js** - Security headers for HTTP requests
+- **CORS** - Configured for specific frontend origins
+- **API Key Authentication** - Hashed API keys using bcrypt
+- **JWT Authentication** - Secure admin authentication with 7-day expiration
+- **Password Hashing** - bcrypt with salt rounds for admin passwords
+- **Rate Limiting** - 100 requests/day per API key (configurable)
+- **File Validation** - Size (10MB max) and type (PDF) restrictions
+- **Input Validation** - Zod schema validation on frontend
 - **Error Handling** - Centralized error middleware
-- **Rate Limiting** - Prevents abuse (recommended for production)
+- **Express Rate Limit** - Global rate limiting for all API routes (100 requests per 15 minutes)
 
 ## 📊 Supported Countries & Visas
 
@@ -212,7 +374,7 @@ Open http://localhost:3000 in browser
 
 - Work Visa
 - Student Visa
-- Blue Card
+- Blue Card (EU)
 - Tourist Visa
 - Business Visa
 
@@ -228,53 +390,256 @@ Open http://localhost:3000 in browser
 - Work Permit
 - Study Permit
 - Visitor Visa
-- Express Entry
+- Express Entry (Permanent Residence)
 
 ### Australia (AU)
 
-- Skilled Work Visa
-- Student Visa
-- Tourist Visa
-- Working Holiday Visa
+- Skilled Work Visa (Subclass 189/190)
+- Student Visa (Subclass 500)
+- Tourist Visa (Subclass 600)
+- Working Holiday Visa (Subclass 417)
 
-## 🚧 Future Enhancements
+## 🎨 Components Overview
 
-- [ ] PDF report generation
-- [ ] Email functionality for results
-- [ ] Admin dashboard for reviewing applications
-- [ ] Partner API keys management
-- [ ] Payment integration
-- [ ] Multi-language support
-- [ ] Real-time evaluation status updates
+### Public UI Components
+
+**Base Components:**
+
+- **Button** - Styled button with variants (primary, secondary, outline, ghost)
+- **Card** - Container with header and content sections
+- **Input** - Form input with error states and validation
+- **Modal** - Reusable dialog with overlay
+- **LoadingSpinner** - Animated loading indicator
+
+**Feature Components:**
+
+- **CountryCard** - Interactive country card with flag and visa count
+- **VisaTypeModal** - Modal for visa type selection
+- **EvaluationForm** - Multi-step form with file upload
+- **FilePreview** - PDF file preview with validation
+- **ScoreCircle** - Animated circular progress indicator
+- **SummaryCard** - AI evaluation summary display
+- **StrengthsList** - Visual list of application strengths
+- **WeaknessesList** - Areas for improvement display
+- **SuggestionsList** - AI recommendations with icons
+- **PDFDownloadButton** - Generate and download PDF reports
+
+### Admin Components
+
+**Dashboard Components:**
+
+- **AdminProtectedRoute** - Route protection wrapper
+- **AdminLayout** - Sidebar navigation layout
+- **StatCard** - Metric display cards with icons
+- **QuickAction** - Dashboard quick action links
+- **InfoRow** - Key-value information display
+
+**Data Management:**
+
+- **ApiKeysTable** - Sortable table with API keys
+- **CreateKeyModal** - Form for creating new API keys
+- **UsageChart** - Line chart for usage trends (Recharts)
+- **DistributionChart** - Pie chart for country/visa distribution
+- **BarChart** - Bar chart for top keys/visa types
+
+## 🧪 Testing
+
+See [TESTING.md](./TESTING.md) for comprehensive testing guide.
+
+**Quick Backend Test:**
+
+```bash
+cd server
+curl http://localhost:5000/api/countries
+```
+
+**Quick Frontend Test:**
+
+```bash
+# Open browser and visit:
+http://localhost:3000
+
+# Test admin login:
+http://localhost:3000/admin/login
+# Email: admin@visaeval.com
+# Password: admin123
+
+# Test API key request:
+http://localhost:3000/api-keys/request
+```
+
+**API Integration Test:**
+
+```bash
+# Generate API key first via UI, then:
+curl -X POST http://localhost:5000/api/evaluations \
+  -H "X-API-Key: your_api_key_here" \
+  -F "name=John Doe" \
+  -F "email=john@example.com" \
+  -F "country=IE" \
+  -F "visaType=work_permit" \
+  -F "resume=@path/to/resume.pdf"
+```
+
+## 🚧 Current Features & Future Enhancements
+
+### ✅ Implemented Features
+
+- [x] Multi-country visa evaluation system
+- [x] AI-powered assessment using Gemini 2.5 Flash
+- [x] PDF document upload and parsing
+- [x] Resume-only evaluation (simplified)
+- [x] Interactive results with scoring
+- [x] PDF report generation
+- [x] X-API-Key authentication for partners
+- [x] API key management system
+- [x] Rate limiting (100 requests/day default)
+- [x] Admin dashboard with JWT auth
+- [x] Self-service API key generation (instant)
+- [x] Usage analytics and charts
+- [x] Partner information tracking
+- [x] Responsive mobile-friendly design
+
+### 🔮 Future Enhancements
+
+- [ ] Email notifications for evaluations
+- [ ] Multi-document support (re-enable all document types)
+- [ ] Email verification for API key requests
+- [ ] Two-factor authentication for admins
+- [ ] Advanced admin user management
+- [ ] Custom rate limit configuration per key
+- [ ] IP whitelisting/blacklisting
+- [ ] Webhook support for evaluation completion
+- [ ] Multi-language support (i18n)
 - [ ] Document OCR for automatic data extraction
+- [ ] Real-time evaluation status via WebSockets
 - [ ] Comparison tool for multiple countries
-- [ ] Historical application tracking
+- [ ] Historical application tracking for users
+- [ ] Payment integration for premium features
+- [ ] Advanced analytics (custom date ranges, exports)
+- [ ] API versioning (v2, v3)
+- [ ] Audit logs for admin actions
+- [ ] Partner dashboard (self-service analytics)
 
 ## 🐛 Troubleshooting
 
-### Backend won't start
+### Backend Issues
 
-- Check MongoDB is running
-- Verify `.env` file exists with correct values
-- Check port 5000 is not in use
+**Backend won't start**
 
-### Frontend shows "Network Error"
+- Check MongoDB is running (`mongod` or MongoDB Atlas connection)
+- Verify `.env` file exists with all required values
+- Check port 5000 is not in use: `lsof -i :5000` (Mac/Linux) or `netstat -ano | findstr :5000` (Windows)
+- Ensure Node.js version is 18+
+
+**MongoDB connection fails**
+
+- Local MongoDB: Ensure service is running
+- Atlas: Check connection string format and network access
+- Verify firewall settings
+
+**Gemini API errors**
+
+- Verify API key is valid at [Google AI Studio](https://makersuite.google.com/app/apikey)
+- Check API quota limits
+- Ensure stable internet connection
+
+### Frontend Issues
+
+**Frontend shows "Network Error"**
 
 - Ensure backend is running on port 5000
-- Verify `NEXT_PUBLIC_API_URL` in `.env.local`
+- Verify `NEXT_PUBLIC_API_URL` in `.env.local` matches backend URL
 - Check browser console for CORS errors
+- Clear browser cache and restart dev server
 
-### File upload fails
+**Admin login fails**
 
-- Verify file is PDF format
+- Run `node src/scripts/create-admin.js` to create admin user
+- Use credentials: `admin@visaeval.com` / `admin123`
+- Check JWT_SECRET is set in backend `.env`
+- Clear localStorage and try again
+
+**API key not working**
+
+- Ensure X-API-Key header is included in requests
+- Verify key is active (not revoked)
+- Check rate limit hasn't been exceeded
+- API key format: `veval_{keyId}_{secret}`
+
+### Upload Issues
+
+**File upload fails**
+
+- Verify file is PDF format only
 - Check file size is under 10MB
 - Ensure `uploads/` directory exists in server folder
+- Check server logs for detailed error messages
 
-### AI evaluation takes too long
+**PDF parsing fails**
 
-- Normal processing time is 10-30 seconds
-- Check Gemini API quota
-- Verify API key is valid
+- Ensure PDF is not encrypted/password protected
+- Check PDF is not corrupted
+- Try with a different PDF file
+
+### Evaluation Issues
+
+**AI evaluation takes too long**
+
+- Normal processing time: 10-30 seconds
+- Check Gemini API response times
+- Verify network connection
+- Review server logs for bottlenecks
+
+**Evaluation fails**
+
+- Check all required fields are filled
+- Ensure resume file is uploaded
+- Verify country and visa type are selected
+- Check server error logs for details
+
+### Admin Dashboard Issues
+
+**Charts not loading**
+
+- Ensure there is data in the database
+- Check browser console for errors
+- Verify API endpoints are responding
+- Check that analytics service is working
+
+**Can't create API keys**
+
+- Ensure you're logged in as admin
+- Check MongoDB connection
+- Verify all required fields are filled
+- Review backend logs for validation errors
+
+### General Debugging
+
+**Enable detailed logging:**
+
+```bash
+# Backend
+NODE_ENV=development npm run dev
+
+# Check logs in terminal
+```
+
+**Clear everything and restart:**
+
+```bash
+# Clear backend cache
+cd server
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear frontend cache
+cd client
+rm -rf node_modules .next package-lock.json
+npm install
+
+# Restart both servers
+```
 
 ## 📝 License
 
@@ -282,14 +647,69 @@ MIT License - feel free to use this project for learning or commercial purposes.
 
 ## 👨‍💻 Development
 
-Built with ❤️ using:
+### Tech Stack
 
-- [Next.js](https://nextjs.org/)
-- [Express](https://expressjs.com/)
-- [MongoDB](https://www.mongodb.com/)
-- [Google Gemini](https://deepmind.google/technologies/gemini/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [TypeScript](https://www.typescriptlang.org/)
+**Backend:**
+
+- [Express.js](https://expressjs.com/) - Web framework
+- [MongoDB](https://www.mongodb.com/) + [Mongoose](https://mongoosejs.com/) - Database
+- [Google Gemini](https://deepmind.google/technologies/gemini/) - AI evaluation
+- [Multer](https://github.com/expressjs/multer) - File upload
+- [pdf-parse](https://www.npmjs.com/package/pdf-parse) - PDF extraction
+- [PDFKit](https://pdfkit.org/) - PDF generation
+- [bcryptjs](https://github.com/dcodeIO/bcrypt.js) - Password hashing
+- [jsonwebtoken](https://github.com/auth0/node-jsonwebtoken) - JWT auth
+- [Helmet.js](https://helmetjs.github.io/) - Security
+- [express-rate-limit](https://github.com/express-rate-limit/express-rate-limit) - Rate limiting
+
+**Frontend:**
+
+- [Next.js 16](https://nextjs.org/) - React framework
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Tailwind CSS v4](https://tailwindcss.com/) - Styling
+- [react-hook-form](https://react-hook-form.com/) + [Zod](https://zod.dev/) - Form validation
+- [axios](https://axios-http.com/) - HTTP client
+- [Recharts](https://recharts.org/) - Data visualization
+- [Radix UI](https://www.radix-ui.com/) - UI primitives
+- [Lucide React](https://lucide.dev/) - Icons
+- [Sonner](https://sonner.emilkowal.ski/) - Toast notifications
+- [Framer Motion](https://www.framer.com/motion/) - Animations
+
+### Project Statistics
+
+- **Total Files**: 100+ TypeScript/JavaScript files
+- **Backend Endpoints**: 20+ REST API routes
+- **Frontend Pages**: 10+ pages including admin dashboard
+- **Supported Countries**: 6 (extensible)
+- **Visa Types**: 25+ across all countries
+- **Database Models**: 4 (Evaluation, Admin, ApiKey, ApiKeyRequest)
+
+### Key Directories
+
+```
+📦 Backend: server/src/
+├── 📂 config/          3 files
+├── 📂 controllers/     6 files
+├── 📂 models/          4 files
+├── 📂 routes/          5 files
+├── 📂 services/        5 files
+├── 📂 middleware/      4 files
+├── 📂 utils/           1 file
+└── 📂 scripts/         2 files
+
+📦 Frontend: client/
+├── 📂 app/             10+ pages
+├── 📂 components/      30+ components
+├── 📂 context/         2 contexts
+└── 📂 lib/             API utilities
+```
+
+## 📚 Documentation
+
+- **[TESTING.md](./TESTING.md)** - Comprehensive testing guide
+- **[BACKEND-SUMMARY.md](./BACKEND-SUMMARY.md)** - Backend architecture details
+- **[ADMIN_DASHBOARD_SUMMARY.md](./ADMIN_DASHBOARD_SUMMARY.md)** - Admin features documentation
+- **[API_KEY_USAGE.md](./API_KEY_USAGE.md)** - API key integration guide
 
 ## 📧 Support
 
@@ -298,7 +718,54 @@ For questions or issues:
 1. Check [TESTING.md](./TESTING.md) for common issues
 2. Review error messages in server/frontend logs
 3. Verify environment configuration
+4. Check MongoDB connection status
+5. Ensure all dependencies are installed
+
+## 🤝 Contributing
+
+This project is open for contributions! Areas for improvement:
+
+1. Add more countries and visa types
+2. Enhance AI evaluation prompts
+3. Improve UI/UX design
+4. Add comprehensive test suites
+5. Optimize performance
+6. Add internationalization (i18n)
+7. Implement email notifications
+8. Create mobile apps
+
+## 🎯 Use Cases
+
+### For Job Seekers
+
+- Evaluate work visa eligibility
+- Compare multiple countries
+- Understand visa requirements
+- Get AI-powered recommendations
+
+### For Students
+
+- Assess student visa chances
+- Find best countries for studies
+- Understand documentation needs
+- Plan visa application timeline
+
+### For Businesses
+
+- Evaluate employee visa eligibility
+- Bulk evaluation via API
+- Track application success rates
+- Streamline hiring process
+
+### For Immigration Consultants
+
+- Quick preliminary assessments
+- Client eligibility screening
+- Data-driven recommendations
+- Scalable evaluation service
 
 ---
+
+**Built with ❤️ using modern web technologies**
 
 **Happy Coding! 🎉**

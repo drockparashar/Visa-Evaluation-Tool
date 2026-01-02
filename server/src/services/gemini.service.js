@@ -108,7 +108,7 @@ Respond ONLY with valid JSON in this exact format (no markdown, no code blocks):
 
       return {
         ...evaluation,
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         tokensUsed: response.usageMetadata?.totalTokenCount || 0,
       };
     } catch (error) {
