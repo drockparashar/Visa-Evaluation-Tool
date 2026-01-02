@@ -45,6 +45,8 @@ class EvaluationService {
           ipAddress: data.ipAddress || "",
           userAgent: data.userAgent || "",
         },
+        apiKeyId: data.apiKeyId || null,
+        source: data.source || "web",
       });
 
       // Save to get evaluationId (pre-save hook generates it)

@@ -1,11 +1,17 @@
 import express from "express";
 import evaluationsController from "../controllers/evaluations.controller.js";
 import uploadMiddleware from "../middleware/upload.middleware.js";
+import { validateApiKey } from "../middleware/apiKey.middleware.js";
 
 const router = express.Router();
 
-// Create new evaluation (with file upload)
-router.post("/", uploadMiddleware, evaluationsController.createEvaluation);
+// Create new evaluation (with file upload and optional API key)
+router.post(
+  "/",
+  validateApiKey,
+  uploadMiddleware,
+  evaluationsController.createEvaluation
+);
 
 // Get all evaluations (with filters)
 router.get("/", evaluationsController.getAllEvaluations);

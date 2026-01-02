@@ -36,6 +36,8 @@ class EvaluationsController {
         visaTypeId,
         ipAddress: req.ip || req.connection.remoteAddress,
         userAgent: req.get("user-agent"),
+        apiKeyId: req.apiKeyId || null,
+        source: req.requestSource || "web",
       };
 
       // Create evaluation

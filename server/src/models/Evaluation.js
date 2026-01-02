@@ -118,6 +118,15 @@ const evaluationSchema = new mongoose.Schema(
       ipAddress: String,
       userAgent: String,
     },
+    apiKeyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ApiKey",
+    },
+    source: {
+      type: String,
+      enum: ["web", "api"],
+      default: "web",
+    },
   },
   {
     timestamps: true,
