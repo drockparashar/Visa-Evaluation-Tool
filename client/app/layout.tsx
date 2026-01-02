@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { EvaluationProvider } from "@/context/EvaluationContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -30,10 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <EvaluationProvider>
-          {children}
-          <Toaster position="top-right" richColors />
-        </EvaluationProvider>
+        <AdminAuthProvider>
+          <EvaluationProvider>
+            {children}
+            <Toaster position="top-right" richColors />
+          </EvaluationProvider>
+        </AdminAuthProvider>
       </body>
     </html>
   );

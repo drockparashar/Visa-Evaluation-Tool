@@ -2,10 +2,14 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
 import countriesRoutes from "./routes/countries.routes.js";
 import evaluationsRoutes from "./routes/evaluations.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
+import publicApiKeysRoutes from "./routes/publicApiKeys.routes.js";
 import { errorHandler, notFound } from "./middleware/error.middleware.js";
 
 dotenv.config();
@@ -29,6 +33,7 @@ app.use(cors(corsOptions));
 // Body parser
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Rate limiting
 const limiter = rateLimit({
@@ -56,6 +61,9 @@ app.get("/health", (req, res) => {
 
 // API Routes
 app.use("/api/countries", countriesRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/api-keys", publicApiKeysRoutes);
 app.use("/api/evaluations", evaluationsRoutes);
 
 // Root route
@@ -64,7 +72,10 @@ app.get("/", (req, res) => {
     success: true,
     message: "Multi-Country Visa Evaluation API",
     version: "1.0.0",
-    endpoints: {
+    enauth: "/api/auth",
+    admin: "/api/admin",
+    apiKeys: "/api/api-keys",
+    dpoints: {
       countries: "/api/countries",
       evaluations: "/api/evaluations",
       health: "/health",
