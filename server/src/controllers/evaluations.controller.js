@@ -1,4 +1,5 @@
 import evaluationService from "../services/evaluation.service.js";
+import pdfService from "../services/pdf.service.js";
 
 class EvaluationsController {
   /**
@@ -186,6 +187,48 @@ class EvaluationsController {
       res.status(500).json({
         success: false,
         message: "Error deleting evaluation",
+        error: error.message,
+      });
+    }
+  }
+
+  /**
+   * Download evaluation as PDF
+   * GET /api/evaluations/:id/download
+   */
+  async downloadEvaluationPDF(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Get evaluation
+      const evaluation = await evaluationService.getEvaluationById(id);
+
+      if (!evaluation) {
+        return res.status(404).json({
+          success: false,
+          message: "Evaluation not found",
+        });
+      }
+
+      // Generate PDF
+      const pdfBuffer = await pdfService.generateEvaluationPDF(evaluation);
+
+      // Set headers for file download
+      const filename = `Visa_Evaluation_${evaluation.evaluationId}.pdf`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${filename}"`
+      );
+      res.setHeader("Content-Length", pdfBuffer.length);
+
+      // Send PDF
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error("PDF generation error:", error);
+      res.status(500).json({
+        success: false,
+        message: "Error generating PDF report",
         error: error.message,
       });
     }

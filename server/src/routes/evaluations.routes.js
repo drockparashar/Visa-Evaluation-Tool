@@ -13,6 +13,9 @@ router.get("/", evaluationsController.getAllEvaluations);
 // Get evaluation by ID
 router.get("/:id", evaluationsController.getEvaluationById);
 
+// Download evaluation as PDF
+router.get("/:id/download", evaluationsController.downloadEvaluationPDF);
+
 // Get evaluations by user email
 router.get("/user/:email", evaluationsController.getEvaluationsByEmail);
 

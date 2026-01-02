@@ -65,7 +65,6 @@ const evaluationSchema = new mongoose.Schema(
   {
     evaluationId: {
       type: String,
-      required: true,
       unique: true,
       index: true,
     },

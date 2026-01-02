@@ -9,6 +9,7 @@ class EvaluationService {
    */
   async createEvaluation(data, files) {
     const startTime = Date.now();
+    let evaluation = null; // Declare outside try-catch for error handling
 
     try {
       // 1. Validate country and visa type
@@ -25,7 +26,7 @@ class EvaluationService {
       }
 
       // 2. Create evaluation record
-      const evaluation = new Evaluation({
+      evaluation = new Evaluation({
         user: {
           name: data.name,
           email: data.email,
@@ -46,7 +47,7 @@ class EvaluationService {
         },
       });
 
-      // Save to get evaluationId
+      // Save to get evaluationId (pre-save hook generates it)
       await evaluation.save();
 
       // 3. Process uploaded documents
