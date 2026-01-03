@@ -152,3 +152,46 @@ See `.env.example` for all available options.
 ```bash
 npm run dev  # Runs with nodemon for auto-reload
 ```
+
+## 🚀 Deployment to Vercel
+
+The application is configured to run on Vercel's serverless platform.
+
+### Important Notes:
+
+1. **File Storage**: The app automatically uses `/tmp` directory on Vercel (serverless environment has read-only file system except `/tmp`)
+2. **File Persistence**: Files in `/tmp` are temporary and will be deleted after function execution
+3. **Limitations**:
+   - Maximum file size: 4.5MB (Vercel body size limit)
+   - `/tmp` storage: 512MB max
+   - Function execution timeout: 30 seconds (configured in vercel.json)
+
+### Deployment Steps:
+
+1. **Install Vercel CLI**
+
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Configure Environment Variables**
+   Set these in Vercel dashboard or using CLI:
+
+   ```bash
+   vercel env add MONGODB_URI
+   vercel env add GEMINI_API_KEY
+   vercel env add JWT_SECRET
+   ```
+
+3. **Deploy**
+   ```bash
+   vercel --prod
+   ```
+
+### Production Considerations:
+
+For production use with file persistence, consider:
+
+- **AWS S3** or **Google Cloud Storage** for permanent file storage
+- **CloudFlare R2** or **Vercel Blob** for serverless-friendly storage
+- Modify `upload.middleware.js` and `document.service.js` to use cloud storage

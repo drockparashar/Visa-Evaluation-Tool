@@ -33,8 +33,11 @@ export default function RequestApiKeyPage() {
         setKeyId(response.data.data.keyId);
         setRateLimit(response.data.data.rateLimit);
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create API key");
+    } catch (error) {
+      const message = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : "Failed to create API key";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

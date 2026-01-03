@@ -17,7 +17,7 @@ export default async function Home() {
     const response = await countriesApi.getAll();
     countries = response.data;
   } catch (error) {
-    console.error('Failed to fetch countries:', error);
+    // Failed to fetch countries - continue with empty array
   }
 
   return (

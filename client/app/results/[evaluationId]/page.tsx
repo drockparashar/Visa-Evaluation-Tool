@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import axios from 'axios';
 import { evaluationsApi } from '@/lib/api/evaluations';
 import { Evaluation } from '@/lib/types/evaluation';
 import {LoadingSpinner} from '@/components/ui/LoadingSpinner';
@@ -42,9 +43,11 @@ export default function ResultsPage({ params }: ResultsPageProps) {
         setLoading(true);
         const response = await evaluationsApi.getById(evaluationId);
         setEvaluation(response.data);
-      } catch (err: any) {
-        console.error('Error fetching evaluation:', err);
-        setError(err.response?.data?.message || 'Failed to load evaluation results');
+      } catch (err) {
+        const message = axios.isAxiosError(err) && err.response?.data?.message
+          ? err.response.data.message
+          : 'Failed to load evaluation results';
+        setError(message);
         toast.error('Failed to load results');
       } finally {
         setLoading(false);
@@ -77,7 +80,6 @@ export default function ResultsPage({ params }: ResultsPageProps) {
 
       toast.success('PDF downloaded successfully!', { id: 'pdf-download' });
     } catch (error) {
-      console.error('PDF download error:', error);
       toast.error('Failed to download PDF', { id: 'pdf-download' });
     } finally {
       setDownloadingPDF(false);

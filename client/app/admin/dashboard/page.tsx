@@ -37,7 +37,6 @@ export default function AdminDashboardPage() {
         setStats(response.data.data);
       }
     } catch (error) {
-      console.error("Failed to fetch stats:", error);
       toast.error("Failed to load dashboard stats");
     } finally {
       setIsLoading(false);

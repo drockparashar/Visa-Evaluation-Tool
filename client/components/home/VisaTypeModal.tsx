@@ -42,7 +42,6 @@ export default function VisaTypeModal({
       setVisaTypes(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       toast.error('Failed to load visa types');
-      console.error(error);
     } finally {
       setIsLoading(false);
     }

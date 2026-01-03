@@ -1,13 +1,24 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import os from "os";
 import { ALLOWED_FILE_TYPES, MAX_FILE_SIZE } from "../config/constants.js";
+
+// Use /tmp for serverless (Vercel) or os.tmpdir() for local
+const getTempDir = () => {
+  // Check if running in Vercel/serverless environment
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    return "/tmp";
+  }
+  // For local development
+  return path.join(process.cwd(), "uploads", "temp");
+};
 
 // Configure storage
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Temporary storage - will be moved after evaluation ID is generated
-    const uploadDir = path.join(process.cwd(), "uploads", "temp");
+    // Use /tmp in serverless, local uploads otherwise
+    const uploadDir = getTempDir();
 
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });

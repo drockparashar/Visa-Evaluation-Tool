@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import axios from "axios";
 import { useAdminAuth } from "@/context/AdminAuthContext";
 import { toast } from "sonner";
 
@@ -20,15 +21,18 @@ export default function AdminLoginPage() {
       await login(email, password);
       toast.success("Welcome back!");
       router.push("/admin/dashboard");
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Invalid credentials");
+    } catch (error) {
+      const message = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : "Invalid credentials";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-indigo-100 px-4">
       <div className="max-w-md w-full">
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">

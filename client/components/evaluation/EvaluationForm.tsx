@@ -102,7 +102,6 @@ export default function EvaluationForm({
       // Navigate to results page
       router.push(`/results/${response.data.evaluationId}`);
     } catch (error) {
-      console.error('Evaluation error:', error);
       toast.error(
         error instanceof Error
           ? error.message

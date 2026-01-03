@@ -46,7 +46,6 @@ export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem("adminToken");
       }
     } catch (error) {
-      console.error("Auth check failed:", error);
       localStorage.removeItem("adminToken");
     } finally {
       setIsLoading(false);

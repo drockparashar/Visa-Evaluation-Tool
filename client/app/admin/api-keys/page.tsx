@@ -48,7 +48,7 @@ export default function ApiKeysPage() {
       );
 
       if (response.data.success) {
-        setKeys(response.data.data.keys || []);
+        setKeys(response.data.data || []);
       }
     } catch (error) {
       toast.error("Failed to fetch API keys");
@@ -236,8 +236,11 @@ function CreateKeyModal({ onClose, onSuccess }: { onClose: () => void; onSuccess
         setCreatedKey(response.data.data.apiKey);
         toast.success("API key created successfully");
       }
-    } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to create API key");
+    } catch (error) {
+      const message = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : "Failed to create API key";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

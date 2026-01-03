@@ -30,9 +30,12 @@ export default function VerifyApiKeyPage() {
         setKeyId(response.data.data.keyId);
         toast.success("API key created successfully!");
       }
-    } catch (error: any) {
-      setError(error.response?.data?.message || "Verification failed");
-      toast.error(error.response?.data?.message || "Verification failed");
+    } catch (error) {
+      const message = axios.isAxiosError(error) && error.response?.data?.message
+        ? error.response.data.message
+        : "Verification failed";
+      setError(message);
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

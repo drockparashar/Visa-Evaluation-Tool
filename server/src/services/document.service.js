@@ -6,6 +6,14 @@ import pdfParse from "pdf-parse";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Use /tmp for serverless (Vercel) or local storage for development
+const getBaseUploadDir = () => {
+  if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+    return "/tmp";
+  }
+  return path.join(process.cwd(), "uploads");
+};
+
 class DocumentService {
   /**
    * Extract text from PDF file
@@ -43,12 +51,8 @@ class DocumentService {
    * Get document storage path
    */
   getStoragePath(evaluationId, filename) {
-    const uploadDir = path.join(
-      process.cwd(),
-      "uploads",
-      "evaluations",
-      evaluationId
-    );
+    const baseDir = getBaseUploadDir();
+    const uploadDir = path.join(baseDir, "evaluations", evaluationId);
 
     // Create directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
@@ -63,12 +67,8 @@ class DocumentService {
    */
   async deleteEvaluationDocuments(evaluationId) {
     try {
-      const dirPath = path.join(
-        process.cwd(),
-        "uploads",
-        "evaluations",
-        evaluationId
-      );
+      const baseDir = getBaseUploadDir();
+      const dirPath = path.join(baseDir, "evaluations", evaluationId);
 
       if (fs.existsSync(dirPath)) {
         fs.rmSync(dirPath, { recursive: true, force: true });

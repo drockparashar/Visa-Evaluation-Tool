@@ -6,10 +6,32 @@ import AdminProtectedRoute from "@/components/admin/AdminProtectedRoute";
 import { toast } from "sonner";
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
+interface UsageDataPoint {
+  date: string;
+  count: number;
+}
+
+interface CountryDataPoint {
+  _id: string;
+  count: number;
+  [key: string]: string | number; // Index signature for recharts compatibility
+}
+
+interface VisaTypeDataPoint {
+  _id: string;
+  count: number;
+  [key: string]: string | number; // Index signature for recharts compatibility
+}
+
+interface UsageApiItem {
+  _id: { date: string };
+  count: number;
+}
+
 export default function AnalyticsPage() {
-  const [usageData, setUsageData] = useState<any[]>([]);
-  const [countryData, setCountryData] = useState<any[]>([]);
-  const [visaTypeData, setVisaTypeData] = useState<any[]>([]);
+  const [usageData, setUsageData] = useState<UsageDataPoint[]>([]);
+  const [countryData, setCountryData] = useState<CountryDataPoint[]>([]);
+  const [visaTypeData, setVisaTypeData] = useState<VisaTypeDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -47,7 +69,7 @@ export default function AnalyticsPage() {
       ]);
 
       // Process usage data
-      const usageByDate = usage.data.data.reduce((acc: any, item: any) => {
+      const usageByDate = usage.data.data.reduce((acc: Record<string, UsageDataPoint>, item: UsageApiItem) => {
         const date = item._id.date;
         if (!acc[date]) {
           acc[date] = { date, count: 0 };
