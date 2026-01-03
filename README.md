@@ -1,6 +1,8 @@
 # Multi-Country Visa Evaluation Tool
 
-A comprehensive full-stack web application that helps users assess their visa eligibility across multiple countries using AI-powered evaluation, with features for partner API integration, admin dashboard, and self-service API key generation.
+A comprehensive full-stack web application that helps users assess their visa eligibility across multiple countries using AI-powered evaluation, with features for partner API integration, admin dashboard, and instant self-service API key generation.
+
+🌐 **Live Demo**: [https://visa-evaluation-tool-v7lp.vercel.app](https://visa-evaluation-tool-v7lp.vercel.app)
 
 ## 🎯 Features
 
@@ -17,9 +19,9 @@ A comprehensive full-stack web application that helps users assess their visa el
 ### API & Integration Features
 
 - **X-API-Key Authentication**: Secure partner API access with rate limiting
-- **Self-Service API Keys**: Public portal for instant API key generation
+- **Instant API Key Generation**: Self-service portal for immediate API key creation (no email verification required)
 - **Rate Limiting**: Configurable request limits per API key (default: 100 requests/day)
-- **Usage Tracking**: Monitor API key usage and statistics
+- **Usage Tracking**: Real-time monitoring of API key usage and statistics
 
 ### Admin Dashboard
 
@@ -221,12 +223,19 @@ UPLOAD_DIR=./uploads
 
 # CORS (optional)
 ALLOWED_ORIGINS=http://localhost:3000,http://localhost:5173
+
+# For production deployment on Vercel, add your frontend URLs:
+# ALLOWED_ORIGINS=http://localhost:3000,https://your-frontend.vercel.app
 ```
 
 **Frontend** - Create `client/.env.local`:
 
 ```env
+# For local development
 NEXT_PUBLIC_API_URL=http://localhost:5000/api
+
+# For production (set in Vercel dashboard)
+# NEXT_PUBLIC_API_URL=https://your-backend-url.vercel.app/api
 ```
 
 ### 3. Run the Application
@@ -257,9 +266,88 @@ node src/scripts/create-admin.js
 
 Visit:
 
-- **Main App**: http://localhost:3000
+- **Main App**: http://localhost:3000 or [Production](https://visa-evaluation-tool-v7lp.vercel.app)
 - **Admin Dashboard**: http://localhost:3000/admin/login
 - **API Key Request**: http://localhost:3000/api-keys/request
+- **Backend API**: http://localhost:5000 or [Production](https://visa-evaluation-tool.vercel.app)
+
+## 🚀 Deployment
+
+### Deploying to Vercel
+
+Both frontend and backend are deployed on Vercel.
+
+#### Backend Deployment
+
+1. **Push code to GitHub**
+
+   ```bash
+   git add .
+   git commit -m "Deploy backend"
+   git push
+   ```
+
+2. **Create new Vercel project**
+
+   - Go to [Vercel Dashboard](https://vercel.com/dashboard)
+   - Click "New Project"
+   - Import your repository
+   - Select `server` as root directory
+
+3. **Configure Environment Variables**
+
+   - Go to Settings → Environment Variables
+   - Add all variables from `server/.env`:
+     ```
+     PORT=5000
+     NODE_ENV=production
+     MONGODB_URI=your_mongodb_atlas_uri
+     GEMINI_API_KEY=your_gemini_key
+     JWT_SECRET=your_jwt_secret
+     JWT_EXPIRES_IN=7d
+     CLIENT_URL=https://your-frontend.vercel.app
+     MAX_FILE_SIZE_MB=10
+     ALLOWED_ORIGINS=https://your-frontend.vercel.app,http://localhost:3000
+     RATE_LIMIT_WINDOW_MS=900000
+     RATE_LIMIT_MAX_REQUESTS=100
+     ```
+
+4. **Deploy**
+   - Click "Deploy"
+   - Note your backend URL (e.g., `https://visa-evaluation-tool.vercel.app`)
+
+#### Frontend Deployment
+
+1. **Create new Vercel project for frontend**
+
+   - Import same repository
+   - Select `client` as root directory
+
+2. **Configure Environment Variables**
+
+   - Go to Settings → Environment Variables
+   - Add:
+     ```
+     NEXT_PUBLIC_API_URL=https://your-backend.vercel.app/api
+     ```
+
+3. **Deploy**
+
+   - Click "Deploy"
+   - Your frontend will be live at `https://your-frontend.vercel.app`
+
+4. **Update Backend CORS**
+   - Go back to backend project
+   - Update `ALLOWED_ORIGINS` to include your frontend URL
+   - Redeploy backend
+
+#### Important Notes
+
+- **Environment Variables**: Must be set in Vercel dashboard, not just in `.env` files
+- **CORS**: Backend must explicitly allow frontend URL in `ALLOWED_ORIGINS`
+- **MongoDB**: Use MongoDB Atlas (not local MongoDB) for production
+- **File Uploads**: Vercel has serverless function limits (10MB max payload)
+- **Redeployment**: Trigger with `git push` or manual redeploy in Vercel dashboard
 
 ## 📖 User Flow
 
@@ -343,15 +431,16 @@ Visit:
 ## 🔒 Security Features
 
 - **Helmet.js** - Security headers for HTTP requests
-- **CORS** - Configured for specific frontend origins
-- **API Key Authentication** - Hashed API keys using bcrypt
+- **CORS** - Configured for specific frontend origins (localhost + production URLs)
+- **API Key Authentication** - Hashed API keys using bcrypt (salt rounds: 10)
 - **JWT Authentication** - Secure admin authentication with 7-day expiration
 - **Password Hashing** - bcrypt with salt rounds for admin passwords
-- **Rate Limiting** - 100 requests/day per API key (configurable)
-- **File Validation** - Size (10MB max) and type (PDF) restrictions
-- **Input Validation** - Zod schema validation on frontend
-- **Error Handling** - Centralized error middleware
-- **Express Rate Limit** - Global rate limiting for all API routes (100 requests per 15 minutes)
+- **Rate Limiting** - 100 requests/day per API key (configurable), plus global rate limiting (100 req/15min)
+- **File Validation** - Size (10MB max) and type (PDF-only) restrictions
+- **Input Validation** - Zod schema validation on frontend, Mongoose validation on backend
+- **Error Handling** - Centralized error middleware with production/development modes
+- **Environment Variables** - Sensitive data stored in .env files (not committed to git)
+- **HTTPS Ready** - Deployed on Vercel with automatic SSL certificates
 
 ## 📊 Supported Countries & Visas
 
@@ -471,55 +560,72 @@ http://localhost:3000/api-keys/request
 **API Integration Test:**
 
 ```bash
-# Generate API key first via UI, then:
+# Get API key from http://localhost:3000/api-keys/request first
+# Then test evaluation endpoint:
+
 curl -X POST http://localhost:5000/api/evaluations \
   -H "X-API-Key: your_api_key_here" \
   -F "name=John Doe" \
   -F "email=john@example.com" \
+  -F "age=28" \
+  -F "nationality=Indian" \
   -F "country=IE" \
   -F "visaType=work_permit" \
+  -F "educationLevel=bachelors" \
+  -F "workExperience=5" \
+  -F "languageProficiency=advanced" \
   -F "resume=@path/to/resume.pdf"
+
+# Production API:
+# Replace localhost:5000 with https://visa-evaluation-tool.vercel.app
 ```
 
 ## 🚧 Current Features & Future Enhancements
 
 ### ✅ Implemented Features
 
-- [x] Multi-country visa evaluation system
-- [x] AI-powered assessment using Gemini 2.5 Flash
-- [x] PDF document upload and parsing
-- [x] Resume-only evaluation (simplified)
-- [x] Interactive results with scoring
-- [x] PDF report generation
+- [x] Multi-country visa evaluation system (6 countries)
+- [x] AI-powered assessment using Gemini 2.5 Flash (8192 token output)
+- [x] PDF document upload and parsing (resume-only, 10MB limit)
+- [x] Interactive results with scoring (0-100 scale)
+- [x] PDF report generation with PDFKit
 - [x] X-API-Key authentication for partners
-- [x] API key management system
-- [x] Rate limiting (100 requests/day default)
-- [x] Admin dashboard with JWT auth
-- [x] Self-service API key generation (instant)
-- [x] Usage analytics and charts
+- [x] API key management system (CRUD operations)
+- [x] Rate limiting (100 requests/day default, configurable per key)
+- [x] Admin dashboard with JWT authentication
+- [x] Instant API key generation (no email verification)
+- [x] Usage analytics and interactive charts (Recharts)
 - [x] Partner information tracking
 - [x] Responsive mobile-friendly design
+- [x] Production deployment on Vercel (frontend + backend)
+- [x] CORS configuration for multiple origins
+- [x] Real-time statistics and metrics
+- [x] Secure password hashing and token management
 
 ### 🔮 Future Enhancements
 
-- [ ] Email notifications for evaluations
-- [ ] Multi-document support (re-enable all document types)
-- [ ] Email verification for API key requests
+- [ ] Email notifications for evaluations (Nodemailer configured but not active)
+- [ ] Multi-document support (currently resume-only, but backend supports all types)
+- [ ] Email verification for API key requests (infrastructure ready, currently instant)
 - [ ] Two-factor authentication for admins
-- [ ] Advanced admin user management
-- [ ] Custom rate limit configuration per key
-- [ ] IP whitelisting/blacklisting
-- [ ] Webhook support for evaluation completion
-- [ ] Multi-language support (i18n)
-- [ ] Document OCR for automatic data extraction
+- [ ] Advanced admin user management (multiple admin roles)
+- [ ] Custom rate limit configuration UI per key
+- [ ] IP whitelisting/blacklisting for API keys
+- [ ] Webhook support for evaluation completion notifications
+- [ ] Multi-language support (i18n/internationalization)
+- [ ] Document OCR for automatic data extraction from scanned documents
 - [ ] Real-time evaluation status via WebSockets
-- [ ] Comparison tool for multiple countries
-- [ ] Historical application tracking for users
-- [ ] Payment integration for premium features
-- [ ] Advanced analytics (custom date ranges, exports)
-- [ ] API versioning (v2, v3)
-- [ ] Audit logs for admin actions
-- [ ] Partner dashboard (self-service analytics)
+- [ ] Comparison tool for multiple countries side-by-side
+- [ ] Historical application tracking for returning users
+- [ ] Payment integration for premium features (Stripe/PayPal)
+- [ ] Advanced analytics (custom date ranges, CSV exports, data visualization)
+- [ ] API versioning (v2, v3) with backward compatibility
+- [ ] Comprehensive audit logs for all admin actions
+- [ ] Partner dashboard (self-service analytics portal)
+- [ ] Mobile native apps (React Native)
+- [ ] Document templates and auto-fill suggestions
+- [ ] Integration with government immigration APIs
+- [ ] AI chatbot for visa queries
 
 ## 🐛 Troubleshooting
 
@@ -550,8 +656,11 @@ curl -X POST http://localhost:5000/api/evaluations \
 
 - Ensure backend is running on port 5000
 - Verify `NEXT_PUBLIC_API_URL` in `.env.local` matches backend URL
+  - Local: `http://localhost:5000/api`
+  - Production: Set in Vercel environment variables dashboard
 - Check browser console for CORS errors
-- Clear browser cache and restart dev server
+- Clear browser cache and restart dev server (`Ctrl+C` then `npm run dev`)
+- Verify CORS origins in backend `.env` include your frontend URL
 
 **Admin login fails**
 
@@ -645,6 +754,19 @@ npm install
 
 MIT License - feel free to use this project for learning or commercial purposes.
 
+---
+
+## 🌟 Key Highlights
+
+- ✅ **Production Ready**: Fully deployed on Vercel with HTTPS
+- ✅ **AI-Powered**: Google Gemini 2.5 Flash integration
+- ✅ **Secure**: JWT auth, bcrypt hashing, rate limiting, CORS protection
+- ✅ **Scalable**: RESTful API with proper architecture patterns
+- ✅ **Modern Stack**: Next.js 16, TypeScript, Tailwind CSS v4
+- ✅ **Real-time Analytics**: Interactive charts and dashboards
+- ✅ **Developer Friendly**: Comprehensive API docs and examples
+- ✅ **Enterprise Features**: API key management, usage tracking, admin portal
+
 ## 👨‍💻 Development
 
 ### Tech Stack
@@ -678,11 +800,14 @@ MIT License - feel free to use this project for learning or commercial purposes.
 ### Project Statistics
 
 - **Total Files**: 100+ TypeScript/JavaScript files
-- **Backend Endpoints**: 20+ REST API routes
+- **Backend Endpoints**: 25+ REST API routes
 - **Frontend Pages**: 10+ pages including admin dashboard
-- **Supported Countries**: 6 (extensible)
+- **Supported Countries**: 6 (Ireland, Poland, Germany, USA, Canada, Australia)
 - **Visa Types**: 25+ across all countries
 - **Database Models**: 4 (Evaluation, Admin, ApiKey, ApiKeyRequest)
+- **UI Components**: 40+ reusable React components
+- **Backend Services**: 6 service modules
+- **Deployed**: Production-ready on Vercel (frontend + backend)
 
 ### Key Directories
 

@@ -34,6 +34,7 @@ export default function UserInfoSection({
         {/* Name Field */}
         <Input
           label="Full Name"
+          className=' text-black'
           {...register('name', {
             required: 'Name is required',
             minLength: {
@@ -50,6 +51,7 @@ export default function UserInfoSection({
         <Input
           label="Email Address"
           type="email"
+          className=' text-black'
           {...register('email', {
             required: 'Email is required',
             pattern: {
@@ -65,6 +67,7 @@ export default function UserInfoSection({
         {/* Phone Field */}
         <Input
           label="Phone Number"
+          className=' text-black'
           type="tel"
           {...register('phone')}
           error={errors.phone?.message}
