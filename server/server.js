@@ -9,17 +9,21 @@ const PORT = process.env.PORT || 5000;
 // Connect to MongoDB
 connectDB();
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`
+// Export for Vercel serverless
+export default app;
+
+// Start server (for local development)
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`
 ╔═══════════════════════════════════════════════════════╗
 ║   🌍 Multi-Country Visa Evaluation API                ║
 ║                                                       ║
 ║   Status:  ✅ Server running                         ║
 ║   Port:    ${PORT}                                        ║
 ║   Mode:    ${
-    process.env.NODE_ENV || "development"
-  }                               ║
+      process.env.NODE_ENV || "development"
+    }                               ║
 ║   URL:     http://localhost:${PORT}                       ║
 ║                                                       ║
 ║   API Endpoints:                                      ║
@@ -30,7 +34,8 @@ app.listen(PORT, () => {
 ║                                                       ║
 ╚═══════════════════════════════════════════════════════╝
   `);
-});
+  });
+}
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err) => {
